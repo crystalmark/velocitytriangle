@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="windtriangle" width="600" height="600" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<script>
+var c = document.getElementById("windtriangle");
+var height = c.height
+var width = c.width
+var max_line_length = height < width ? height : width;
+var max_speed = 100;
+var ctx = c.getContext("2d");
+drawNorthLine(ctx);
+
+track_required = 90
+indicated_air_speed = 20
+wind_speed = 10
+wind_direction = 0
+
+drawTrackRequired(ctx, track_required, indicated_air_speed);
+drawWind(ctx, wind_direction, wind_speed);
+
+console.log(calculateHeading( wind_speed, wind_direction, track_required, indicated_air_speed));
+
+function drawNorthLine(context){
+    context.save();
+	diamond_width = 10;
+	diamond_height= 15;
+	x = width/2;
+	y = 0;
+
+	//north diamond
+    context.beginPath();
+    context.moveTo(x,y);    
+    context.lineTo(x - diamond_width / 2, y + diamond_height / 2);
+    context.lineTo(x, y + diamond_height);
+    context.lineTo(x + diamond_width / 2, y + diamond_height / 2);
+    context.closePath();    
+    context.fillStyle = "#000000";
+    context.fill();
+
+	ctx.beginPath();
+	ctx.moveTo(x, diamond_height);
+	ctx.lineTo(x, width);
+	ctx.stroke();
+    context.restore();
+}
+function to_radians(degrees){
+	return (Math.PI * (degrees) / 180.0)
+}
+function reciprocal(degrees){
+	if ( degrees == 360 )
+		return 180;
+	else if ( degrees < 180)
+		return degrees + 180;
+	else
+		return degrees - 180;
+}
+function calculateHeading( wind_speed, wind_direction, track_required, indicated_air_speed){
+	reciprocal_wind_direction = reciprocal(wind_direction)
+	console.log('reciprocal wind direction: '+reciprocal_wind_direction)
+	wtangle = track_required - reciprocal_wind_direction
+	console.log('wind to track angle: '+wtangle)
+	sinDrift = wind_speed*Math.sin(to_radians(wtangle))/indicated_air_speed
+	console.log('sinDrift: '+sinDrift)
+	drift = Math.asin(sinDrift)
+	console.log('drift: '+drift)
+	heading = track_required + drift
+	console.log('heading: '+heading)
+	return heading
+}
+function lengthFromSpeed(speed){
+	return line_length = max_line_length * (speed/max_speed)
+}
+function drawTrackRequired(context, track, speed){
+    context.save();
+	centre_x = width/2;
+	centre_y = height/2;
+    context.beginPath();
+    context.moveTo(centre_x,centre_y);
+
+    theta = to_radians(track - 90);
+
+    line_length = lengthFromSpeed(speed)
+
+    console.log('speed = '+speed+ ' line length = '+line_length)
+
+    radius = line_length/2;
+    
+    ctx.lineTo(centre_x + max_line_length * Math.cos(theta), centre_y + max_line_length * Math.sin(theta));
+
+    context.closePath();
+	ctx.stroke();
+    
+    context.beginPath();
+    ctx.arc(centre_x, centre_y, radius, -1.56, theta);
+	ctx.stroke();
+
+	text_angle=theta / 2 
+	y1=centre_y + 1.5*(line_length)*Math.sin((text_angle)*Math.PI);
+	x1=centre_x + 1.5*(line_length)*Math.cos((text_angle)*Math.PI);
+
+	ctx.font = '12px sans-serif';
+	ctx.fillStyle='#000000'
+	ctx.fillText('tr '+track+'/'+speed,x1,y1);
+
+    context.restore();
+}
+function drawWind(context, direction, speed){
+    context.save();
+	centre_x = width/2;
+	centre_y = height/2;
+    context.beginPath();
+    context.moveTo(centre_x,centre_y);
+
+    reciprocal_direction = reciprocal(direction)
+
+    theta = to_radians(reciprocal_direction - 90);
+
+    line_length = lengthFromSpeed(speed)
+
+    radius = line_length/2;
+    
+    ctx.lineTo(centre_x + line_length * Math.cos(theta), centre_y + line_length * Math.sin(theta));
+
+    context.closePath();
+	ctx.stroke();
+    
+    context.beginPath();
+    ctx.arc(centre_x, centre_y, radius, -1.56, theta);
+	ctx.stroke();
+
+	text_angle=theta / 2 
+	y1=centre_y + 1.5*(line_length)*Math.sin((text_angle)*Math.PI);
+	x1=centre_x + 1.5*(line_length)*Math.cos((text_angle)*Math.PI);
+
+	ctx.font = '12px sans-serif';
+	ctx.fillStyle='#000000'
+	ctx.fillText('wind '+direction+'/'+speed,x1,y1);
+
+    context.restore();
+}
+
+</script>
+
+</body>
+</html>
